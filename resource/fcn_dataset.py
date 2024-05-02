@@ -75,16 +75,25 @@ class CamVidDataset(Dataset):
 
     def rgb_to_class_id(self, label_img):
         # Convert an RGB label image to a class ID image (H, W, 3) -> (H, W)
-        class_id_img = np.zeros((label_img.size[1], label_img.size[0]), dtype=np.uint8)
-        for i in range(label_img.size[1]):
-            for j in range(label_img.size[0]):
-                rgb = label_img.getpixel((j, i))
-                rgb = (rgb[0], rgb[1], rgb[2])
-                for class_id, (rgb_values, _) in self.class_dict.items():
-                    if rgb == rgb_values:
-                        class_id_img[i, j] = class_id
-                        break
 
+        # class_id_img = np.zeros((label_img.size[1], label_img.size[0]), dtype=np.uint8)
+        # for i in range(label_img.size[1]):
+        #     for j in range(label_img.size[0]):
+        #         rgb = label_img.getpixel((j, i))
+        #         rgb = (rgb[0], rgb[1], rgb[2])
+        #         for class_id, (rgb_values, _) in self.class_dict.items():
+        #             if rgb == rgb_values:
+        #                 class_id_img[i, j] = class_id
+        #                 break
+        #transfer label_img into torch tensor
+        # print(label_img.size)
+        class_id_img = torch.zeros((label_img.size[1], label_img.size[0]), dtype=torch.uint8)
+        label_img = transforms.ToTensor()(label_img)
+        for class_id, (rgb_values, _) in self.class_dict.items():
+            rgb_values_tensor = torch.tensor(rgb_values)
+            mask = torch.all(label_img == rgb_values_tensor.view(3, 1, 1), dim=0)
+
+            class_id_img[mask] = class_id
         return class_id_img
 
 
