@@ -66,7 +66,7 @@ def main():
         loss_list = []
         correct_pixel = 0
         total_pixel = 0
-       conf_matrix = torch.zeros((num_classes, num_classes))
+        conf_matrix = torch.zeros((num_classes, num_classes))
         if save_pred:
             pred_list = []
         with torch.no_grad():
