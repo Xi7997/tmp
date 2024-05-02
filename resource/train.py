@@ -53,7 +53,7 @@ def main():
         # print(outputs.shape, labels.shape)
         criterion = torch.nn.CrossEntropyLoss()
         loss = criterion(outputs, labels)
-        print("Loss = ",loss.item())
+        # print("Loss = ",loss.item())
         return loss
 
 
@@ -66,7 +66,7 @@ def main():
         loss_list = []
         correct_pixel = 0
         total_pixel = 0
-        conf_matrix = np.zeros((num_classes, num_classes))
+       conf_matrix = torch.zeros((num_classes, num_classes))
         if save_pred:
             pred_list = []
         with torch.no_grad():
@@ -89,11 +89,15 @@ def main():
 
 
             pixel_acc = correct_pixel / total_pixel
-            IoUs = [conf_matrix[i, i] / (np.sum(conf_matrix[i, :]) + np.sum(conf_matrix[:, i]) - conf_matrix[i, i]) for i in
-                    range(num_classes) if conf_matrix[i, i] > 0]
-            mean_iou = np.nanmean(IoUs)
-
-            freq_iou = np.sum([conf_matrix[i, i] for i in range(num_classes) if conf_matrix[i, i] > 0]) / np.sum(conf_matrix)
+            # IoUs = [conf_matrix[i, i] / (np.sum(conf_matrix[i, :]) + np.sum(conf_matrix[:, i]) - conf_matrix[i, i]) for i in
+            #         range(num_classes) if conf_matrix[i, i] > 0]
+            # mean_iou = np.nanmean(IoUs)
+            #
+            # freq_iou = np.sum([conf_matrix[i, i] for i in range(num_classes) if conf_matrix[i, i] > 0]) / np.sum(conf_matrix)
+            # use pytorch to recalculate ious, mean_iou and freq_iou
+            Ious = torch.diag(conf_matrix) / (conf_matrix.sum(dim=0) + conf_matrix.sum(dim=1) - torch.diag(conf_matrix))
+            mean_iou = torch.mean(Ious[Ious == Ious])
+            freq_iou = torch.sum(torch.diag(conf_matrix)) / torch.sum(conf_matrix)
             loss = sum(loss_list) / len(loss_list)
             print('Pixel accuracy: {:.4f}, Mean IoU: {:.4f}, Frequency weighted IoU: {:.4f}, Loss: {:.4f}'.format(pixel_acc,
                                                                                                                   mean_iou,
